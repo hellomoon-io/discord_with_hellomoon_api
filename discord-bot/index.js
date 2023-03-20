@@ -5,7 +5,7 @@ const {
   CollectionNameRequest,
   NftSocialRequest,
 } = require("@hellomoon/api");
-const { paginateUntilEmpty } = require("./util/paginationToken.js");
+const { paginateUntilEmpty } = require("../util/paginationToken.js");
 
 const helloMoonClient = new RestClient(process.env.HELLOMOON_API_KEY);
 

@@ -15,7 +15,8 @@
   },
   "private": true,
   "workspaces": [
-    "workspace-a",
-    "workspace-b"
+    "discord-with-hellomoon-api-sdk",
+    "discord-with-hellomoon-streaming-sdk",
+    "how-to-paginate"
   ]
 }

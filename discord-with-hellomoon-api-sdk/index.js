@@ -142,5 +142,5 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-// bot logs in everytime to make a request
+// login our discord bot
 client.login(process.env.DISCORD_KEY);

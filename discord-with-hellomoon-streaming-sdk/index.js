@@ -62,67 +62,85 @@ client.on("messageCreate", async (message) => {
     const messageId = message.id;
     const fetchedWebhookMessage = await webhookClient.fetchMessage(messageId);
 
-    const helloMoonCollectionIdField =
-      fetchedWebhookMessage.embeds[0].fields.find(
-        (field) => field.name === "helloMoonCollectionId"
+    const helloMoonCollectionIdFields = fetchedWebhookMessage.embeds.map(
+      (embed) => {
+        return embed.fields.find(
+          (field) => field.name === "helloMoonCollectionId"
+        ).value;
+      }
+    );
+
+    const collectionMetaData = helloMoonCollectionIdFields.map(
+      async (helloMoonCollectionId) => {
+        const { imageUrl, description, collectionName } =
+          await getHelloMoonCollectionId(helloMoonCollectionId);
+
+        return {
+          imageUrl,
+          description,
+          collectionName,
+        };
+      }
+    );
+
+    const resolvedCollectionMetaData = await Promise.all(collectionMetaData);
+
+    const embededBuilders = resolvedCollectionMetaData.map((data) => {
+      const { imageUrl, description, collectionName } = data;
+
+      const priceField = fetchedWebhookMessage.embeds[0].fields.find(
+        (field) => field.name === "price"
       );
 
-    const helloMoonCollectionId = helloMoonCollectionIdField.value;
-    const { imageUrl, description, collectionName } =
-      await getHelloMoonCollectionId(helloMoonCollectionId);
-
-    const priceField = fetchedWebhookMessage.embeds[0].fields.find(
-      (field) => field.name === "price"
-    );
-
-    const sellerField = fetchedWebhookMessage.embeds[0].fields.find(
-      (field) => field.name === "seller"
-    );
-
-    const mintField = fetchedWebhookMessage.embeds[0].fields.find(
-      (field) => field.name === "mint"
-    );
-
-    const marketActionField = fetchedWebhookMessage.embeds[0].fields.find(
-      (field) => field.name === "marketActionType"
-    );
-
-    const marketPlaceField = fetchedWebhookMessage.embeds[0].fields.find(
-      (field) => field.name === "marketName"
-    );
-
-    const editedEmbed = new EmbedBuilder()
-      .setColor("Blue")
-      .setTitle(collectionName)
-      .setDescription(description ?? "-")
-      .setThumbnail(imageUrl)
-      .addFields(
-        {
-          name: "Price",
-          value: String(priceField.value ?? "-"),
-        },
-        { name: "Seller", value: String(sellerField.value ?? "-") },
-        {
-          name: "Nft Mint",
-          value: String(mintField.value ?? "-"),
-        },
-        {
-          name: "Nft Mint",
-          value: String(mintField.value ?? "-"),
-        },
-        {
-          name: "Market Action Type",
-          value: String(marketActionField.value ?? "-"),
-        },
-        {
-          name: "MarketPlace",
-          value: String(marketPlaceField.value ?? "-"),
-        }
+      const sellerField = fetchedWebhookMessage.embeds[0].fields.find(
+        (field) => field.name === "seller"
       );
+
+      const mintField = fetchedWebhookMessage.embeds[0].fields.find(
+        (field) => field.name === "mint"
+      );
+
+      const marketActionField = fetchedWebhookMessage.embeds[0].fields.find(
+        (field) => field.name === "marketActionType"
+      );
+
+      const marketPlaceField = fetchedWebhookMessage.embeds[0].fields.find(
+        (field) => field.name === "marketName"
+      );
+
+      return new EmbedBuilder()
+        .setColor("Blue")
+        .setTitle(collectionName)
+        .setDescription(description ?? "-")
+        .setThumbnail(imageUrl)
+        .addFields(
+          {
+            name: "Price",
+            value: String(priceField.value ?? "-"),
+          },
+          { name: "Seller", value: String(sellerField.value ?? "-") },
+          {
+            name: "Nft Mint",
+            value: String(mintField.value ?? "-"),
+          },
+          {
+            name: "Nft Mint",
+            value: String(mintField.value ?? "-"),
+          },
+          {
+            name: "Market Action Type",
+            value: String(marketActionField.value ?? "-"),
+          },
+          {
+            name: "MarketPlace",
+            value: String(marketPlaceField.value ?? "-"),
+          }
+        );
+    });
 
     const editedMessage = await webhookClient.editMessage(messageId, {
       username: "Edited User",
-      embeds: [editedEmbed],
+      embeds: [...embededBuilders],
     });
   }
 });
